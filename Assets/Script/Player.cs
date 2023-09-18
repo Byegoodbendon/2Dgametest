@@ -175,10 +175,11 @@ public class Player : MonoBehaviour
     {
         if(collision.gameObject.tag == "Enemy")
         {
+            Frog frog = collision.gameObject.GetComponent<Frog>();
             if(anim.GetBool("falling"))
             {
-            Destroy(collision.gameObject);
-            rb.velocity = new Vector2(rb.velocity.x, jumpforce * 0.5f);
+                frog.explosion();
+                rb.velocity = new Vector2(rb.velocity.x, jumpforce * 0.5f);
             }
             else if(transform.position.x < collision.gameObject.transform.position.x)
             {

@@ -76,4 +76,18 @@ public class Frog : MonoBehaviour
             }
         }
     }
+    public void explosion()
+    {
+        Destroy(coll);
+        Destroy(rb);
+        anim.SetTrigger("explosioning");
+
+    }
+    void death()
+    {
+        Destroy(gameObject);
+    }
+
+
 }
+
