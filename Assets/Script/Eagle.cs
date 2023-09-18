@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class Eagle : MonoBehaviour
+public class Eagle : Enemy
 {
     private bool faceup = true;
     private float upy,downy;
@@ -12,8 +12,9 @@ public class Eagle : MonoBehaviour
     private float movingspeed = 2.0f; 
     
     // Start is called before the first frame update
-    void Start()
+    protected override void Start()
     {
+        base.Start();
         upy = up.transform.position.y;
         downy = down.transform.position.y;
         Destroy(up.gameObject);
@@ -23,7 +24,10 @@ public class Eagle : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        movement();
+        if(!stopupdate)
+        {
+            movement();
+        }
     }
     void movement()
     {

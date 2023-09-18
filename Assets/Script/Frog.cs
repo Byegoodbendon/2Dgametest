@@ -3,36 +3,32 @@ using System.Collections.Generic;
 using UnityEditor.Callbacks;
 using UnityEngine;
 
-public class Frog : MonoBehaviour
+public class Frog : Enemy
 {
     public Transform left;
     public Transform right;
     private float leftx,rightx;
-    private Rigidbody2D rb;
-    private Animator anim;
-    private Collider2D coll;
     public LayerMask ground;
     //移動速度
     private float movingspeed = 3.0f;
     private float jumpingspeed = 4.0f;
 
     private bool faceleft = true;
-    // Start is called before the first frame update
-    void Start()
+    protected override void Start()  //
     {
-        rb = GetComponent<Rigidbody2D>();
-        anim = GetComponent<Animator>();
-        coll = GetComponent<Collider2D>();
+        base.Start();//
         leftx = left.transform.position.x;
         rightx = right.transform.position.x;
         Destroy(left.gameObject);
         Destroy(right.gameObject);
     }
 
-    // Update is called once per frame
     void Update()
     {
-        switchanim();
+        if(!stopupdate)
+        {
+            switchanim();
+        }
     }
     
     void movement()
@@ -76,18 +72,5 @@ public class Frog : MonoBehaviour
             }
         }
     }
-    public void explosion()
-    {
-        Destroy(coll);
-        Destroy(rb);
-        anim.SetTrigger("explosioning");
-
-    }
-    void death()
-    {
-        Destroy(gameObject);
-    }
-
-
 }
 
