@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
@@ -12,11 +13,16 @@ public class Player : MonoBehaviour
     private Collider2D pcoll;
     private Collider2D collbox;
     private Animator anim;
+    public AudioSource jumpAudio;
+    public AudioSource collectAudio;
+
+    public AudioSource hurtAudio;
     public float speed;
-    private float speedcoeficient;
+    private float speedcoeficient = 1.0f;
     public float jumpforce;
     private bool jumppressed; 
-    private bool crouchpressed;
+    private bool isCrouch;
+    public Transform cellingCheck;
     public LayerMask ground;   //判斷地面圖層
     public int Cherry;
     public int Diamond;
@@ -44,12 +50,19 @@ public class Player : MonoBehaviour
          jumppressed = true;
        }
         //蹲下判斷      
-       if(Input.GetKey(KeyCode.LeftControl))
+       if(Input.GetKey(KeyCode.LeftControl) && pcoll.IsTouchingLayers(ground))
         {
+            isCrouch = true;
+            anim.SetBool("crouching",true);
+        }
+        else if(Physics2D.OverlapCircle(cellingCheck.position , 0.2f, ground) && pcoll.IsTouchingLayers(ground))
+        {
+            isCrouch = true;
             anim.SetBool("crouching",true);
         }
         else
         {
+            isCrouch = false;
             anim.SetBool("crouching",false);
         }
       
@@ -63,26 +76,21 @@ public class Player : MonoBehaviour
         }
         Jump();
         SwitchAnim();
-        speedco();
-
-       
-        //groundmovement();
-        
-        
+        crough();
     }
     //蹲下狀態調整
-    void speedco()
+    void crough()
     {
-        if(coll.IsTouchingLayers(ground) && Input.GetKey(KeyCode.LeftControl))
-        {
-            speedcoeficient = 0.6f;
-            collbox.offset = new Vector2(collbox.offset.x, -0.5f);
-        }
-        else
-        {
-            speedcoeficient = 1.0f;
-            collbox.offset = new Vector2(collbox.offset.x, -0.182f);
-        }
+            if(isCrouch)
+            {
+                speedcoeficient = 0.6f;
+                collbox.offset = new Vector2(collbox.offset.x, -0.5f);
+            }
+            else
+            {
+                speedcoeficient = 1.0f;
+                collbox.offset = new Vector2(collbox.offset.x, -0.182f);
+            }
     }
     //角色移動
     void movement()
@@ -110,11 +118,10 @@ public class Player : MonoBehaviour
     {
         if(jumppressed && !ishurt)
        {
-           //rb.AddForce(Vector2.up*jumpforce*Time.deltaTime);
         rb.velocity = new Vector2(rb.velocity.x, jumpforce);
+        jumpAudio.Play();
         jumppressed = false;
         anim.SetBool("jumping",true);
-           //System.Console.WriteLine("123");
        }
     }
    
@@ -133,12 +140,12 @@ public class Player : MonoBehaviour
             {
                 ishurt = false;
                 anim.SetBool("hurting",false);
-                anim.SetBool("idleing",true);
+                //anim.SetBool("idleing",true);
             }
         }
         else if(anim.GetBool("jumping"))
         {
-            anim.SetBool("idleing",false);
+            //anim.SetBool("idleing",false);
             if(rb.velocity.y <= 0)
             {
                 anim.SetBool("jumping",false);
@@ -148,7 +155,7 @@ public class Player : MonoBehaviour
         else if(coll.IsTouchingLayers(ground))
         {
             anim.SetBool("falling",false);
-            anim.SetBool("idleing",true);
+            //anim.SetBool("idleing",true);
         }
         
     }
@@ -159,14 +166,22 @@ public class Player : MonoBehaviour
         if(collision.tag =="Collection")
         {
             Destroy(collision.gameObject);
+            collectAudio.Play();
             Cherry = Cherry+1;
             cherrynum.text = Cherry.ToString();
         }
         if(collision.tag =="collection diamond")
         {
             Destroy(collision.gameObject);
+            collectAudio.Play();
             Diamond = Diamond+1;
             dianum.text = Diamond.ToString();
+        }
+        if(collision.tag == "deadZone")
+        {
+            GetComponent<AudioSource>().enabled = false;
+            Invoke("Restart", 1f);
+            
         }
     }
 
@@ -186,16 +201,24 @@ public class Player : MonoBehaviour
             else if(transform.position.x < collision.gameObject.transform.position.x)
             {
             rb.velocity = new Vector2(-7.0f, rb.velocity.y);
+            hurtAudio.Play();
             ishurt = true;
             }
             else if(transform.position.x > collision.gameObject.transform.position.x)
             {
             rb.velocity = new Vector2(7.0f, rb.velocity.y);
+            hurtAudio.Play();
             ishurt = true;
             }
         }
     }
-    
+    //場景重啟
+    private void Restart()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+
+
+    }
     
     
 
