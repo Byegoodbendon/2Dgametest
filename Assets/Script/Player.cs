@@ -65,6 +65,7 @@ public class Player : MonoBehaviour
             isCrouch = false;
             anim.SetBool("crouching",false);
         }
+        Jump();
       
     }
 
@@ -74,7 +75,7 @@ public class Player : MonoBehaviour
         {
           movement();
         }
-        Jump();
+        //Jump();
         SwitchAnim();
         crough();
     }
@@ -95,6 +96,7 @@ public class Player : MonoBehaviour
     //角色移動
     void movement()
     {
+        
        float horizontalmove = Input.GetAxis("Horizontal");
        float facedirection = Input.GetAxisRaw("Horizontal");
        
