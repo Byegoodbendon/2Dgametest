@@ -5,24 +5,31 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
+public class TransformState : MonoBehaviour
+{
+    public Transform OriginalParent
+    {
+        get;
+        set;
+    }
+    void Awake() {
+        this.OriginalParent = this.transform.parent;
+    }
+}
 public class Player : MonoBehaviour
 {
-    // Start is called before the first frame update
     private Rigidbody2D rb;
     private Collider2D coll;
     private Collider2D pcoll;
     private Collider2D collbox;
     private Animator anim;
-    public AudioSource jumpAudio;
-    public AudioSource collectAudio;
-
-    public AudioSource hurtAudio;
     public float speed;
     private float speedcoeficient = 1.0f;
     public float jumpforce;
     private bool jumppressed; 
     private bool isCrouch;
     public Transform cellingCheck;
+    public Transform groundCheck;
     public LayerMask ground;   //判斷地面圖層
     public int Cherry;
     public int Diamond;
@@ -45,17 +52,18 @@ public class Player : MonoBehaviour
     void Update()
     {
         //跳躍判斷
-       if(Input.GetButtonDown("Jump") && coll.IsTouchingLayers(ground))
+    
+       if(Input.GetButtonDown("Jump") && Physics2D.OverlapCircle(groundCheck.position, 1.0f, ground))
        {
          jumppressed = true;
        }
         //蹲下判斷      
-       if(Input.GetKey(KeyCode.LeftControl) && pcoll.IsTouchingLayers(ground))
+       if(Input.GetKey(KeyCode.LeftControl) && Physics2D.OverlapCircle(groundCheck.position, 1.0f, ground))
         {
             isCrouch = true;
             anim.SetBool("crouching",true);
         }
-        else if(Physics2D.OverlapCircle(cellingCheck.position , 0.2f, ground) && pcoll.IsTouchingLayers(ground))
+        else if(Physics2D.OverlapCircle(cellingCheck.position , 0.2f, ground) && Physics2D.OverlapCircle(groundCheck.position, 0.5f, ground))
         {
             isCrouch = true;
             anim.SetBool("crouching",true);
@@ -65,7 +73,7 @@ public class Player : MonoBehaviour
             isCrouch = false;
             anim.SetBool("crouching",false);
         }
-        Jump();
+        //Jump();
       
     }
 
@@ -75,7 +83,7 @@ public class Player : MonoBehaviour
         {
           movement();
         }
-        //Jump();
+        Jump();
         SwitchAnim();
         crough();
     }
@@ -85,12 +93,12 @@ public class Player : MonoBehaviour
             if(isCrouch)
             {
                 speedcoeficient = 0.6f;
-                collbox.offset = new Vector2(collbox.offset.x, -0.5f);
+                collbox.enabled = false;
             }
             else
             {
                 speedcoeficient = 1.0f;
-                collbox.offset = new Vector2(collbox.offset.x, -0.182f);
+                collbox.enabled = true;
             }
     }
     //角色移動
@@ -121,7 +129,7 @@ public class Player : MonoBehaviour
         if(jumppressed && !ishurt)
        {
         rb.velocity = new Vector2(rb.velocity.x, jumpforce);
-        jumpAudio.Play();
+        SoundManager.instance.JumpAudio();
         jumppressed = false;
         anim.SetBool("jumping",true);
        }
@@ -130,7 +138,7 @@ public class Player : MonoBehaviour
     //動畫切換
     void SwitchAnim()
     {
-        if(rb.velocity.y < 0.1f && !pcoll.IsTouchingLayers(ground))
+        if(rb.velocity.y < 0.1f && !Physics2D.OverlapCircle(groundCheck.position, 1.0f, ground))
         {
             anim.SetBool("falling",true);
         }
@@ -142,12 +150,10 @@ public class Player : MonoBehaviour
             {
                 ishurt = false;
                 anim.SetBool("hurting",false);
-                //anim.SetBool("idleing",true);
             }
         }
         else if(anim.GetBool("jumping"))
         {
-            //anim.SetBool("idleing",false);
             if(rb.velocity.y <= 0)
             {
                 anim.SetBool("jumping",false);
@@ -157,7 +163,6 @@ public class Player : MonoBehaviour
         else if(coll.IsTouchingLayers(ground))
         {
             anim.SetBool("falling",false);
-            //anim.SetBool("idleing",true);
         }
         
     }
@@ -168,14 +173,16 @@ public class Player : MonoBehaviour
         if(collision.tag =="Collection")
         {
             Destroy(collision.gameObject);
-            collectAudio.Play();
+            SoundManager.instance.CherryAudio();
+            //collectAudio.Play();
             Cherry = Cherry+1;
             cherrynum.text = Cherry.ToString();
         }
         if(collision.tag =="collection diamond")
         {
             Destroy(collision.gameObject);
-            collectAudio.Play();
+            SoundManager.instance.CherryAudio();
+            //collectAudio.Play();
             Diamond = Diamond+1;
             dianum.text = Diamond.ToString();
         }
@@ -193,23 +200,28 @@ public class Player : MonoBehaviour
         if(collision.gameObject.tag == "Enemy")
         {
             Enemy enemy = collision.gameObject.GetComponent<Enemy>();
-           //Frog frog = collision.gameObject.GetComponent<Frog>();
             if(anim.GetBool("falling"))
             {
-                //frog.explosion();
                 enemy.explosion();    //在player程式中叫enemy程式執行指令
-                rb.velocity = new Vector2(rb.velocity.x, jumpforce * 0.5f);
+                rb.velocity = new Vector2(rb.velocity.x, jumpforce * 0.8f);
             }
             else if(transform.position.x < collision.gameObject.transform.position.x)
             {
-            rb.velocity = new Vector2(-7.0f, rb.velocity.y);
-            hurtAudio.Play();
+                
+                //Physics2D.IgnoreCollision(collision.gameObject.GetComponent<Collider2D>(), coll);
+                //Physics2D.IgnoreCollision(collision.gameObject.GetComponent<Collider2D>(), collbox);
+            rb.velocity = new Vector2(-5.0f, rb.velocity.y);
+            SoundManager.instance.HurtAudio();
             ishurt = true;
             }
             else if(transform.position.x > collision.gameObject.transform.position.x)
             {
-            rb.velocity = new Vector2(7.0f, rb.velocity.y);
-            hurtAudio.Play();
+                
+                
+                //Physics2D.IgnoreCollision(collision.gameObject.GetComponent<Collider2D>(), coll);
+                //Physics2D.IgnoreCollision(collision.gameObject.GetComponent<Collider2D>(), collbox);
+            rb.velocity = new Vector2(5.0f, rb.velocity.y);
+            SoundManager.instance.HurtAudio();
             ishurt = true;
             }
         }
