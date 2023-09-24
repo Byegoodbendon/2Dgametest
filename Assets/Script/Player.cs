@@ -24,7 +24,7 @@ public class Player : MonoBehaviour
     private Collider2D collbox;
     private Animator anim;
     public float speed;
-    private float speedcoeficient = 1.0f;
+    private float speedcoeficient = 1.0f;   //站立與蹲下速度參數
     public float jumpforce;
     private bool jumppressed; 
     private bool isCrouch;
@@ -38,6 +38,9 @@ public class Player : MonoBehaviour
     public Text dianum;
     private bool ishurt; //預設為false
     private Time hurtcooldown;
+    public float fallMultiplier = 2.5f;
+    public float lowJumpMultiplier = 2f;
+    private float HurtTime;   //受傷計時器
     void Start()
     {
        //rb = GetComponent<Rigidbody2D>();
@@ -52,10 +55,12 @@ public class Player : MonoBehaviour
     void Update()
     {
         //跳躍判斷
+        
     
-       if(Input.GetButtonDown("Jump") && Physics2D.OverlapCircle(groundCheck.position, 1.0f, ground))
+       if(Input.GetButtonDown("Jump") && pcoll.IsTouchingLayers(ground))//Physics2D.OverlapCircle(groundCheck.position, 1.0f, ground))
        {
          jumppressed = true;
+         
        }
         //蹲下判斷      
        if(Input.GetKey(KeyCode.LeftControl) && Physics2D.OverlapCircle(groundCheck.position, 1.0f, ground))
@@ -72,14 +77,15 @@ public class Player : MonoBehaviour
         {
             isCrouch = false;
             anim.SetBool("crouching",false);
+            
         }
-        //Jump();
+        cherrynum.text = Cherry.ToString();
       
     }
 
     void FixedUpdate()
     {
-        if(!ishurt)
+        if(!ishurt)      //若受傷狀態為True則無法操控角色
         {
           movement();
         }
@@ -90,16 +96,16 @@ public class Player : MonoBehaviour
     //蹲下狀態調整
     void crough()
     {
-            if(isCrouch)
-            {
-                speedcoeficient = 0.6f;
-                collbox.enabled = false;
-            }
-            else
-            {
-                speedcoeficient = 1.0f;
-                collbox.enabled = true;
-            }
+        if(isCrouch)
+        {
+            speedcoeficient = 0.6f;
+            collbox.enabled = false;
+        }
+        else
+        {
+            speedcoeficient = 1.0f;
+            collbox.enabled = true;
+        }
     }
     //角色移動
     void movement()
@@ -129,6 +135,14 @@ public class Player : MonoBehaviour
         if(jumppressed && !ishurt)
        {
         rb.velocity = new Vector2(rb.velocity.x, jumpforce);
+        /*if(rb.velocity.y < 0)
+        {
+            rb.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
+        }else if(rb.velocity.y > 0 && !Input.GetButton("Jump"))
+        {
+            rb.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
+
+        }*/
         SoundManager.instance.JumpAudio();
         jumppressed = false;
         anim.SetBool("jumping",true);
@@ -138,7 +152,7 @@ public class Player : MonoBehaviour
     //動畫切換
     void SwitchAnim()
     {
-        if(rb.velocity.y < 0.1f && !Physics2D.OverlapCircle(groundCheck.position, 1.0f, ground))
+        if(rb.velocity.y < 0.1f && !pcoll.IsTouchingLayers(ground))  //用腳底的collider確認有沒有踩到地板
         {
             anim.SetBool("falling",true);
         }
@@ -146,11 +160,7 @@ public class Player : MonoBehaviour
         {
             anim.SetBool("hurting",true);
             anim.SetFloat("running",0);
-            if(Mathf.Abs(rb.velocity.x)<0.01)
-            {
-                ishurt = false;
-                anim.SetBool("hurting",false);
-            }
+            DelayTime();
         }
         else if(anim.GetBool("jumping"))
         {
@@ -159,12 +169,28 @@ public class Player : MonoBehaviour
                 anim.SetBool("jumping",false);
                 anim.SetBool("falling",true);
             }
+            else
+            {
+                anim.SetBool("jumping",true);
+                anim.SetBool("falling",false);
+            }
         }
-        else if(coll.IsTouchingLayers(ground))
+        else if(pcoll.IsTouchingLayers(ground))
         {
             anim.SetBool("falling",false);
         }
         
+    }
+    //受傷延時
+    void DelayTime()
+    {
+        HurtTime += Time.deltaTime;
+        if(HurtTime > 0.7f)                         //受傷時無法操控角色的時間
+        {
+            HurtTime = 0f;
+            ishurt = false;
+            anim.SetBool("hurting",false);
+        }
     }
     
     //物品蒐集
@@ -172,11 +198,10 @@ public class Player : MonoBehaviour
     {
         if(collision.tag =="Collection")
         {
-            Destroy(collision.gameObject);
+            Cherry cherry = collision.gameObject.GetComponent<Cherry>();
+            Destroy(cherry.GetComponent<Collider2D>());
             SoundManager.instance.CherryAudio();
-            //collectAudio.Play();
-            Cherry = Cherry+1;
-            cherrynum.text = Cherry.ToString();
+            cherry.anim.SetTrigger("getting");
         }
         if(collision.tag =="collection diamond")
         {
@@ -190,7 +215,6 @@ public class Player : MonoBehaviour
         {
             GetComponent<AudioSource>().enabled = false;
             Invoke("Restart", 1f);
-            
         }
     }
 
@@ -199,6 +223,7 @@ public class Player : MonoBehaviour
     {
         if(collision.gameObject.tag == "Enemy")
         {
+            Health health = GetComponent<Health>();
             Enemy enemy = collision.gameObject.GetComponent<Enemy>();
             if(anim.GetBool("falling"))
             {
@@ -210,9 +235,10 @@ public class Player : MonoBehaviour
                 
                 //Physics2D.IgnoreCollision(collision.gameObject.GetComponent<Collider2D>(), coll);
                 //Physics2D.IgnoreCollision(collision.gameObject.GetComponent<Collider2D>(), collbox);
-            rb.velocity = new Vector2(-5.0f, rb.velocity.y);
-            SoundManager.instance.HurtAudio();
-            ishurt = true;
+                rb.velocity = new Vector2(-5.0f, rb.velocity.y);
+                SoundManager.instance.HurtAudio();
+                ishurt = true;
+                health.Hurt();
             }
             else if(transform.position.x > collision.gameObject.transform.position.x)
             {
@@ -220,9 +246,10 @@ public class Player : MonoBehaviour
                 
                 //Physics2D.IgnoreCollision(collision.gameObject.GetComponent<Collider2D>(), coll);
                 //Physics2D.IgnoreCollision(collision.gameObject.GetComponent<Collider2D>(), collbox);
-            rb.velocity = new Vector2(5.0f, rb.velocity.y);
-            SoundManager.instance.HurtAudio();
-            ishurt = true;
+                rb.velocity = new Vector2(5.0f, rb.velocity.y);
+                SoundManager.instance.HurtAudio();
+                ishurt = true;
+                health.Hurt();
             }
         }
     }
@@ -233,7 +260,11 @@ public class Player : MonoBehaviour
 
 
     }
-    
+    //櫻桃計算
+    public void CherryCount()
+    {
+        Cherry += 1;   
+    }
     
 
 }

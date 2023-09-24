@@ -8,6 +8,7 @@ public class Menu : MonoBehaviour
 {
     public GameObject Pausegame;
     public GameObject PauseButton;
+    public GameObject DeathPanel;
     public AudioMixer audioMixer;
 
     public void PlayGame()
@@ -37,5 +38,17 @@ public class Menu : MonoBehaviour
     public void SetVolume(float value)
     {
         audioMixer.SetFloat("MainVolume", value);
+    }
+    public void GameOver()
+    {
+        PauseButton.SetActive(false);
+        DeathPanel.SetActive(true);
+        Time.timeScale = 0.0f;
+    }
+    public void RestartGame()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        DeathPanel.SetActive(false);
+        Time.timeScale = 1.0f;
     }
 }

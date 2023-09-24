@@ -1,18 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Cherry : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public Animator anim;
+    public void CherryGet()
     {
-        
+        FindObjectOfType<Player>().CherryCount();
     }
-
-    // Update is called once per frame
-    void Update()
+    
+    public void CherryDestroy()
     {
-        
+        Destroy(gameObject);
     }
 }
