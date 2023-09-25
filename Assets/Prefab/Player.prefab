@@ -79,7 +79,8 @@ GameObject:
   - component: {fileID: 7204820097407296600}
   - component: {fileID: 7094657254510366820}
   - component: {fileID: 1444069347249144840}
-  m_Layer: 0
+  - component: {fileID: 743622367322795346}
+  m_Layer: 3
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -143,7 +144,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 967942559
   m_SortingLayer: 4
-  m_SortingOrder: 0
+  m_SortingOrder: 3
   m_Sprite: {fileID: 21300000, guid: 72de0c64f2c6a498096698322c976a67, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -170,7 +171,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 3
+  m_GravityScale: 4
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -180,7 +181,7 @@ Rigidbody2D:
     m_Bits: 0
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!114 &2667056247416743378
 MonoBehaviour:
@@ -194,10 +195,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 494b57a4b2e309e49ab124c4e98b1262, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 10
-  jumpforce: 15
+  speed: 8
+  jumpforce: 16
   cellingCheck: {fileID: 8822750648019077480}
-  groundCheck: {fileID: 0}
+  groundCheck: {fileID: 8953053988881019674}
   ground:
     serializedVersion: 2
     m_Bits: 64
@@ -205,7 +206,7 @@ MonoBehaviour:
   Diamond: 0
   cherrynum: {fileID: 0}
   dianum: {fileID: 0}
-  fallMultiplier: 2.5
+  fallMultiplier: 5
   lowJumpMultiplier: 2
 --- !u!95 &4831735577269879854
 Animator:
@@ -260,7 +261,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.04886055, y: -0.18211675}
+  m_Offset: {x: 0, y: -0.27665973}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -271,7 +272,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.9520302, y: 0.97836924}
+  m_Size: {x: 0.8396816, y: 1.0272193}
   m_EdgeRadius: 0
 --- !u!58 &7204820097407296600
 CircleCollider2D:
@@ -282,7 +283,7 @@ CircleCollider2D:
   m_GameObject: {fileID: 3956539753428338560}
   m_Enabled: 1
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: 92ed50516863bd54289f05d22eb9abdf, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -305,9 +306,9 @@ CircleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.09, y: -0.53}
+  m_Offset: {x: 0, y: -0.57}
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 0.4
 --- !u!60 &7094657254510366820
 PolygonCollider2D:
   m_ObjectHideFlags: 0
@@ -352,10 +353,10 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -0.6245737, y: -0.8765328}
-      - {x: -0.70708466, y: -1.1633177}
-      - {x: 0.6054163, y: -1.174983}
-      - {x: 0.51209164, y: -0.84153605}
+    - - {x: -0.39402008, y: -0.8765328}
+      - {x: -0.2920885, y: -1.1896667}
+      - {x: 0.3155775, y: -1.1947446}
+      - {x: 0.3935213, y: -0.88105965}
   m_UseDelaunayMesh: 0
 --- !u!82 &1444069347249144840
 AudioSource:
@@ -366,10 +367,10 @@ AudioSource:
   m_GameObject: {fileID: 3956539753428338560}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 24300002, guid: 97fe55cb28ce40644becdc5bfc466535, type: 2}
   m_audioClip: {fileID: 8300000, guid: 033766cc31c97904bae4404b8a079544, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.3
+  m_Volume: 0.15
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -453,3 +454,18 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &743622367322795346
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3956539753428338560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 328a27d72322c0341a34ad66f49ecd2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 3
+  currentHealth: 3
+  menu: {fileID: 0}

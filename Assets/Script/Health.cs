@@ -13,11 +13,12 @@ public class Health : MonoBehaviour
         
     }
 
-    public void Hurt()
+    public void Hurt(int damage)
     {
         if(currentHealth > 0)
         {
-            currentHealth -= 1;
+            currentHealth -= damage;
+
         }else{
             currentHealth = 0;
         }
@@ -30,10 +31,7 @@ public class Health : MonoBehaviour
     public void gameOver()
     {
         menu.GameOver();
-    }
-    public void Tes1t()
-    {
-        Debug.Log("2");
+        SoundManager.instance.DeathAudio();
     }
 
 }

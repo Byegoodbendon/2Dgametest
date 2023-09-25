@@ -4,6 +4,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEditor.Sprites;
 
 public class TransformState : MonoBehaviour
 {
@@ -37,13 +38,11 @@ public class Player : MonoBehaviour
     public Text cherrynum;
     public Text dianum;
     private bool ishurt; //預設為false
-    private Time hurtcooldown;
-    public float fallMultiplier = 2.5f;
+    public float fallMultiplier = 5f;
     public float lowJumpMultiplier = 2f;
     private float HurtTime;   //受傷計時器
     void Start()
     {
-       //rb = GetComponent<Rigidbody2D>();
        rb = GetComponent<Rigidbody2D>();
        coll = GetComponent<CircleCollider2D>();
        collbox = GetComponent<BoxCollider2D>();
@@ -55,12 +54,9 @@ public class Player : MonoBehaviour
     void Update()
     {
         //跳躍判斷
-        
-    
        if(Input.GetButtonDown("Jump") && pcoll.IsTouchingLayers(ground))//Physics2D.OverlapCircle(groundCheck.position, 1.0f, ground))
        {
          jumppressed = true;
-         
        }
         //蹲下判斷      
        if(Input.GetKey(KeyCode.LeftControl) && Physics2D.OverlapCircle(groundCheck.position, 1.0f, ground))
@@ -79,7 +75,8 @@ public class Player : MonoBehaviour
             anim.SetBool("crouching",false);
             
         }
-        cherrynum.text = Cherry.ToString();
+        cherrynum.text = Cherry.ToString();    //顯示得到櫻桃的數量
+        dianum.text = Diamond.ToString();  //顯示得到鑽石的數量
       
     }
 
@@ -87,7 +84,8 @@ public class Player : MonoBehaviour
     {
         if(!ishurt)      //若受傷狀態為True則無法操控角色
         {
-          movement();
+            gameObject.layer = 3;   //沒受傷的話保持角色Layer為Player
+            movement();
         }
         Jump();
         SwitchAnim();
@@ -110,7 +108,6 @@ public class Player : MonoBehaviour
     //角色移動
     void movement()
     {
-        
        float horizontalmove = Input.GetAxis("Horizontal");
        float facedirection = Input.GetAxisRaw("Horizontal");
        
@@ -135,14 +132,14 @@ public class Player : MonoBehaviour
         if(jumppressed && !ishurt)
        {
         rb.velocity = new Vector2(rb.velocity.x, jumpforce);
-        /*if(rb.velocity.y < 0)
+        if(rb.velocity.y < 0)
         {
             rb.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
         }else if(rb.velocity.y > 0 && !Input.GetButton("Jump"))
         {
-            rb.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
+            rb.velocity += Vector2.up * Physics2D.gravity.y * (lowJumpMultiplier - 1) ;//* Time.deltaTime;
 
-        }*/
+        }
         SoundManager.instance.JumpAudio();
         jumppressed = false;
         anim.SetBool("jumping",true);
@@ -198,23 +195,23 @@ public class Player : MonoBehaviour
     {
         if(collision.tag =="Collection")
         {
-            Cherry cherry = collision.gameObject.GetComponent<Cherry>();
+            Collection cherry = collision.gameObject.GetComponent<Collection>();
             Destroy(cherry.GetComponent<Collider2D>());
             SoundManager.instance.CherryAudio();
             cherry.anim.SetTrigger("getting");
         }
         if(collision.tag =="collection diamond")
         {
-            Destroy(collision.gameObject);
-            SoundManager.instance.CherryAudio();
-            //collectAudio.Play();
-            Diamond = Diamond+1;
-            dianum.text = Diamond.ToString();
+            Collection diamond = collision.gameObject.GetComponent<Collection>();
+            Destroy(diamond.GetComponent<Collider2D>());
+            SoundManager.instance.DiamondAudio();
+            diamond.anim.SetTrigger("getting");
         }
         if(collision.tag == "deadZone")
         {
+            Health health = GetComponent<Health>();
             GetComponent<AudioSource>().enabled = false;
-            Invoke("Restart", 1f);
+            health.Hurt(3);
         }
     }
 
@@ -232,24 +229,19 @@ public class Player : MonoBehaviour
             }
             else if(transform.position.x < collision.gameObject.transform.position.x)
             {
-                
-                //Physics2D.IgnoreCollision(collision.gameObject.GetComponent<Collider2D>(), coll);
-                //Physics2D.IgnoreCollision(collision.gameObject.GetComponent<Collider2D>(), collbox);
                 rb.velocity = new Vector2(-5.0f, rb.velocity.y);
+                gameObject.layer = 7;     //將角色的layer設為序號7的enemy
                 SoundManager.instance.HurtAudio();
                 ishurt = true;
-                health.Hurt();
+                health.Hurt(1);
             }
             else if(transform.position.x > collision.gameObject.transform.position.x)
             {
-                
-                
-                //Physics2D.IgnoreCollision(collision.gameObject.GetComponent<Collider2D>(), coll);
-                //Physics2D.IgnoreCollision(collision.gameObject.GetComponent<Collider2D>(), collbox);
                 rb.velocity = new Vector2(5.0f, rb.velocity.y);
+                gameObject.layer = 7;     //將角色的layer設為序號7的enemy
                 SoundManager.instance.HurtAudio();
                 ishurt = true;
-                health.Hurt();
+                health.Hurt(1);
             }
         }
     }
@@ -257,14 +249,16 @@ public class Player : MonoBehaviour
     private void Restart()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-
-
     }
     //櫻桃計算
     public void CherryCount()
     {
         Cherry += 1;   
     }
-    
+    //鑽石計算
+    public void DiamondCount()
+    {
+        Diamond += 1;
+    }
 
 }
